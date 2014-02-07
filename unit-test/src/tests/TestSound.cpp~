@@ -1,0 +1,24 @@
+#include "../UnitTest++.h"
+#include <QUrl>
+#include <QByteArray>
+
+#include "/home/aw/projects/hifi/libraries/audio/src/Sound.h"
+
+using namespace UnitTest;
+
+
+namespace {
+
+
+TEST(CheckSoundSampleRates)
+{
+  const char bytes[] = {0x22, 0x56, 0x00, 0x00};
+  QByteArray array = QByteArray(bytes, 4);
+  QUrl url = QUrl("");
+  Sound sound(url, 0);
+
+  int sampleRate =   sound.getSampleRate(array);
+    CHECK_EQUAL(22050, sampleRate);
+}
+
+}
