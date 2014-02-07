@@ -19,10 +19,16 @@ public:
     Sound(const QUrl& sampleURL, QObject* parent = 0);
     
     const QByteArray& getByteArray() { return _byteArray; }
+    bool isFileExtensionWAV(const QUrl& sampleURL) const;
+    int getSampleRate(QByteArray& rate) const;
+    bool convertWAVtoAudioMixerInput(QByteArray& array);
+    void resample(QByteArray array) ;
 private:
     QByteArray _byteArray;
+    bool WAVExtension;
 private slots:
     void replyFinished(QNetworkReply* reply);
+
 };
 
 #endif /* defined(__hifi__Sound__) */
