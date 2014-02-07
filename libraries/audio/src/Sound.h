@@ -21,8 +21,8 @@ public:
     const QByteArray& getByteArray() { return _byteArray; }
     bool isFileExtensionWAV(const QUrl& sampleURL) const;
     int getSampleRate(QByteArray& rate) const;
-    bool convertWAVtoAudioMixerInput(QByteArray& array);
-    void resample(QByteArray array) ;
+    int convertWAVtoRAW(QByteArray& array);
+    void resample(QByteArray& array, int sample_rate);
 private:
     QByteArray _byteArray;
     bool WAVExtension;
