@@ -116,7 +116,7 @@ void Hand::simulate(float deltaTime, bool isMine) {
                 
                 if (palm.getControllerButtons() & BUTTON_1) {
                     if (glm::length(fingerTipPosition - _lastFingerAddVoxel) > (FINGERTIP_VOXEL_SIZE / 2.f)) {
-                        QColor paintColor = Menu::getInstance()->getActionForOption(MenuOption::VoxelPaintColor)->data().value<QColor>();
+                        QColor paintColor = Application::getInstance()->getMenu()->getActionForOption(MenuOption::VoxelPaintColor)->data().value<QColor>();
                         Application::getInstance()->makeVoxel(fingerTipPosition,
                                                               FINGERTIP_VOXEL_SIZE,
                                                               paintColor.red(),
@@ -133,7 +133,7 @@ void Hand::simulate(float deltaTime, bool isMine) {
                 }
                 
                 //  Voxel Drumming with fingertips if enabled
-                if (Menu::getInstance()->isOptionChecked(MenuOption::VoxelDrumming)) {
+                if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::VoxelDrumming)) {
                     VoxelTreeElement* fingerNode = Application::getInstance()->getVoxels()->getVoxelEnclosing(
                                                                                 glm::vec3(fingerTipPosition / (float)TREE_SCALE));
                     if (fingerNode) {
@@ -189,7 +189,7 @@ void Hand::updateCollisions() {
                 // don't collid with our own hands
                 continue;
             }
-            if (Menu::getInstance()->isOptionChecked(MenuOption::PlaySlaps)) {
+            if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PlaySlaps)) {
                 //  Check for palm collisions
                 glm::vec3 myPalmPosition = palm.getPosition();
                 float palmCollisionDistance = 0.1f;
@@ -231,7 +231,7 @@ void Hand::updateCollisions() {
             }
         }
             
-        if (Menu::getInstance()->isOptionChecked(MenuOption::HandsCollideWithSelf)) {
+        if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::HandsCollideWithSelf)) {
             // and the current avatar (ignoring everything below the parent of the parent of the last free joint)
             glm::vec3 owningPenetration;
             const Model& skeletonModel = _owningAvatar->getSkeletonModel();
@@ -322,23 +322,27 @@ void Hand::render(bool isMine) {
         _buckyBalls.render();
     }
     
-    if (Menu::getInstance()->isOptionChecked(MenuOption::CollisionProxies)) {
+    const Menu* menu = Application::getInstance()->getMenu();
+    if(menu){
+      if (menu->isOptionChecked(MenuOption::CollisionProxies)) {
         for (size_t i = 0; i < getNumPalms(); i++) {
-            PalmData& palm = getPalms()[i];
-            if (!palm.isActive()) {
-                continue;
-            }
-            glm::vec3 position = palm.getPosition();
-            glPushMatrix();
-            glTranslatef(position.x, position.y, position.z);
-            glColor3f(0.0f, 1.0f, 0.0f);
-            glutSolidSphere(PALM_COLLISION_RADIUS * _owningAvatar->getScale(), 10, 10);
-            glPopMatrix();
+	  PalmData& palm = getPalms()[i];
+	  if (!palm.isActive()) {
+	    continue;
+	  }
+	  glm::vec3 position = palm.getPosition();
+	  glPushMatrix();
+	  glTranslatef(position.x, position.y, position.z);
+	  glColor3f(0.0f, 1.0f, 0.0f);
+	  glutSolidSphere(PALM_COLLISION_RADIUS * _owningAvatar->getScale(), 10, 10);
+	  glPopMatrix();
         }
-    }
+      }
+
     
-    if (Menu::getInstance()->isOptionChecked(MenuOption::DisplayLeapHands)) {
+      if (menu->isOptionChecked(MenuOption::DisplayLeapHands)) {
         renderLeapHands(isMine);
+      }
     }
 
     if (isMine) {
@@ -371,7 +375,7 @@ void Hand::renderLeapHands(bool isMine) {
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    if (isMine && Menu::getInstance()->isOptionChecked(MenuOption::DisplayHandTargets)) {
+    if (isMine && Application::getInstance()->getMenu()->isOptionChecked(MenuOption::DisplayHandTargets)) {
         for (size_t i = 0; i < getNumPalms(); ++i) {
             PalmData& palm = getPalms()[i];
             if (!palm.isActive()) {

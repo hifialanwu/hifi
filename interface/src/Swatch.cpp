@@ -34,6 +34,7 @@ QColor Swatch::getColor() {
 }
 
 void Swatch::checkColor() {
+  if(!_action) return;
     if (_action->data().value<QColor>() == _colors[_selected - 1]) {
         return;
     }
@@ -111,16 +112,20 @@ void Swatch::handleEvent(int key, bool getColor) {
     }
 
     if (getColor) {
+      if(_action){
         if (_action->data().value<QColor>() != _colors[_selected - 1]) {
             _selected = next;
             _colors[_selected - 1] = _action->data().value<QColor>();
         }
+      }
     } else {
         _selected = next;
         QPixmap map(16, 16);
         map.fill(_colors[_selected - 1]);
-        _action->setData(_colors[_selected - 1]) ;
-        _action->setIcon(map);
+	if(_action){
+	  _action->setData(_colors[_selected - 1]) ;
+	  _action->setIcon(map);
+	}
     }
 }
 

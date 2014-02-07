@@ -34,25 +34,6 @@
 #include "InfoView.h"
 #include "ui/MetavoxelEditor.h"
 
-Menu* Menu::_instance = NULL;
-
-Menu* Menu::getInstance() {
-    static QMutex menuInstanceMutex;
-
-    // lock the menu instance mutex to make sure we don't race and create two menus and crash
-    menuInstanceMutex.lock();
-
-    if (!_instance) {
-        qDebug("First call to Menu::getInstance() - initing menu.");
-
-        _instance = new Menu();
-    }
-
-    menuInstanceMutex.unlock();
-
-    return _instance;
-}
-
 const ViewFrustumOffset DEFAULT_FRUSTUM_OFFSET = {-135.0f, 0.0f, 0.0f, 25.0f, 0.0f};
 const float DEFAULT_FACESHIFT_EYE_DEFLECTION = 0.25f;
 
@@ -72,6 +53,10 @@ Menu::Menu() :
     _boundaryLevelAdjust(0),
     _maxVoxelPacketsPerSecond(DEFAULT_MAX_VOXEL_PPS)
 {
+
+}
+
+void Menu::init(){
     Application *appInstance = Application::getInstance();
 
     QMenu* fileMenu = addMenu("File");
@@ -286,10 +271,10 @@ Menu::Menu() :
     addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::Stars, Qt::Key_Asterisk, true);
     addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::Atmosphere, Qt::SHIFT | Qt::Key_A, true);
     addActionToQMenuAndActionHash(renderOptionsMenu,
-                                  MenuOption::GlowMode,
-                                  0,
-                                  appInstance->getGlowEffect(),
-                                  SLOT(cycleRenderMode()));
+    				  MenuOption::GlowMode,
+    				  0,
+    				  appInstance->getGlowEffect(),
+    				  SLOT(cycleRenderMode()));
 
     addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::ParticleCloud, 0, false);
     addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::Shadows, 0, false);
@@ -682,7 +667,6 @@ QAction* Menu::addCheckableActionToQMenuAndActionHash(QMenu* destinationMenu,
     QAction* action = addActionToQMenuAndActionHash(destinationMenu, actionName, shortcut, receiver, member);
     action->setCheckable(true);
     action->setChecked(checked);
-
     return action;
 }
 
@@ -690,8 +674,7 @@ void Menu::removeAction(QMenu* menu, const QString& actionName) {
     menu->removeAction(_actionHash.value(actionName));
 }
 
-
-bool Menu::isOptionChecked(const QString& menuOption) {
+bool Menu::isOptionChecked(const QString& menuOption) const{
     return _actionHash.value(menuOption)->isChecked();
 }
 

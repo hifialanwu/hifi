@@ -27,7 +27,9 @@ bool VoxelHideShowThread::process() {
     const quint64 USECS_PER_FRAME = SECS_TO_USECS / FRAME_RATE; // every 60fps
 
     quint64 start = usecTimestampNow();
-    _theSystem->checkForCulling();
+    if(_theSystem){
+      _theSystem->checkForCulling();
+    }
     quint64 end = usecTimestampNow();
     quint64 elapsed = end - start;
 
