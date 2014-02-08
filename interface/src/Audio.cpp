@@ -63,7 +63,7 @@ Audio::Audio(Oscilloscope* scope, int16_t initialJitterBufferSamples, QObject* p
     _scope(scope),
     _averagedLatency(0.0),
     _measuredJitter(0),
-	_jitterBufferSamples(initialJitterBufferSamples),
+    _jitterBufferSamples(initialJitterBufferSamples),
     _lastInputLoudness(0),
     _lastVelocity(0),
     _lastAcceleration(0),
@@ -219,7 +219,7 @@ void linearResampling(int16_t* sourceSamples, int16_t* destinationSamples,
                         // left channel
                         destinationSamples[j] = sourceSamples[sourceIndex];
                     } else if (j % destinationAudioFormat.channelCount() == 1) {
-                         // right channel
+			// right channel
                         destinationSamples[j] = sourceSamples[sourceIndex + (sourceAudioFormat.channelCount() > 1 ? 1 : 0)];
                     } else {
                         // channels above 2, fill with silence
@@ -304,29 +304,29 @@ void Audio::handleAudioInput() {
 
     const Menu* menu = Application::getInstance()->getMenu();
     if (menu){
-      if (menu->isOptionChecked(MenuOption::EchoLocalAudio) && !_muted) {
-        // if this person wants local loopback add that to the locally injected audio
+	if (menu->isOptionChecked(MenuOption::EchoLocalAudio) && !_muted) {
+	    // if this person wants local loopback add that to the locally injected audio
 
-        if (!_loopbackOutputDevice) {
-	  // we didn't have the loopback output device going so set that up now
-	  _loopbackOutputDevice = _loopbackAudioOutput->start();
-        }
+	    if (!_loopbackOutputDevice) {
+		// we didn't have the loopback output device going so set that up now
+		_loopbackOutputDevice = _loopbackAudioOutput->start();
+	    }
 
-        if (_inputFormat == _outputFormat) {
-	  _loopbackOutputDevice->write(inputByteArray);
-        } else {
-	  static float loopbackOutputToInputRatio = (_outputFormat.sampleRate() / (float) _inputFormat.sampleRate())
-	    * (_outputFormat.channelCount() / _inputFormat.channelCount());
+	    if (_inputFormat == _outputFormat) {
+		_loopbackOutputDevice->write(inputByteArray);
+	    } else {
+		static float loopbackOutputToInputRatio = (_outputFormat.sampleRate() / (float) _inputFormat.sampleRate())
+		    * (_outputFormat.channelCount() / _inputFormat.channelCount());
 
-	  QByteArray loopBackByteArray(inputByteArray.size() * loopbackOutputToInputRatio, 0);
+		QByteArray loopBackByteArray(inputByteArray.size() * loopbackOutputToInputRatio, 0);
 
-	  linearResampling((int16_t*) inputByteArray.data(), (int16_t*) loopBackByteArray.data(),
-			   inputByteArray.size() / sizeof(int16_t),
-			   loopBackByteArray.size() / sizeof(int16_t), _inputFormat, _outputFormat);
+		linearResampling((int16_t*) inputByteArray.data(), (int16_t*) loopBackByteArray.data(),
+				 inputByteArray.size() / sizeof(int16_t),
+				 loopBackByteArray.size() / sizeof(int16_t), _inputFormat, _outputFormat);
 
-	  _loopbackOutputDevice->write(loopBackByteArray);
-        }
-      }
+		_loopbackOutputDevice->write(loopBackByteArray);
+	    }
+	}
     }
     _inputRingBuffer.writeData(inputByteArray.data(), inputByteArray.size());
 
@@ -399,26 +399,26 @@ void Audio::handleAudioInput() {
             // + 12 for 3 floats for position + float for bearing + 1 attenuation byte
 	    const Menu* menu = Application::getInstance()->getMenu();
 	    if(menu){
-	      PacketType packetType = menu->isOptionChecked(MenuOption::EchoServerAudio)
-                ? PacketTypeMicrophoneAudioWithEcho : PacketTypeMicrophoneAudioNoEcho;
+		PacketType packetType = menu->isOptionChecked(MenuOption::EchoServerAudio)
+		    ? PacketTypeMicrophoneAudioWithEcho : PacketTypeMicrophoneAudioNoEcho;
 
-	      char* currentPacketPtr = monoAudioDataPacket + populatePacketHeader(monoAudioDataPacket, packetType);
+		char* currentPacketPtr = monoAudioDataPacket + populatePacketHeader(monoAudioDataPacket, packetType);
 
-	      // memcpy the three float positions
-	      memcpy(currentPacketPtr, &headPosition, sizeof(headPosition));
-	      currentPacketPtr += (sizeof(headPosition));
+		// memcpy the three float positions
+		memcpy(currentPacketPtr, &headPosition, sizeof(headPosition));
+		currentPacketPtr += (sizeof(headPosition));
 
-	      // memcpy our orientation
-	      memcpy(currentPacketPtr, &headOrientation, sizeof(headOrientation));
-	      currentPacketPtr += sizeof(headOrientation);
+		// memcpy our orientation
+		memcpy(currentPacketPtr, &headOrientation, sizeof(headOrientation));
+		currentPacketPtr += sizeof(headOrientation);
 
-	      nodeList->getNodeSocket().writeDatagram(monoAudioDataPacket,
-						      NETWORK_BUFFER_LENGTH_BYTES_PER_CHANNEL + leadingBytes,
-						      audioMixer->getActiveSocket()->getAddress(),
-						      audioMixer->getActiveSocket()->getPort());
+		nodeList->getNodeSocket().writeDatagram(monoAudioDataPacket,
+							NETWORK_BUFFER_LENGTH_BYTES_PER_CHANNEL + leadingBytes,
+							audioMixer->getActiveSocket()->getAddress(),
+							audioMixer->getActiveSocket()->getPort());
 
-	      Application::getInstance()->getBandwidthMeter()->outputStream(BandwidthMeter::AUDIO)
-                .updateValue(NETWORK_BUFFER_LENGTH_BYTES_PER_CHANNEL + leadingBytes);
+		Application::getInstance()->getBandwidthMeter()->outputStream(BandwidthMeter::AUDIO)
+		    .updateValue(NETWORK_BUFFER_LENGTH_BYTES_PER_CHANNEL + leadingBytes);
 	    }
         }
         delete[] inputAudioSamples;
@@ -664,7 +664,7 @@ void Audio::addProceduralSounds(int16_t* monoInput, int numSamples) {
 
             monoInput[i] = glm::clamp(monoInput[i] + collisionSample, MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
             _localProceduralSamples[i] = glm::clamp(_localProceduralSamples[i] + collisionSample,
-                                                  MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
+						    MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
 
             _collisionSoundMagnitude *= _collisionSoundDuration;
         }
@@ -688,7 +688,7 @@ void Audio::addProceduralSounds(int16_t* monoInput, int numSamples) {
 
             monoInput[i] = glm::clamp(monoInput[i] + collisionSample, MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
             _localProceduralSamples[i] = glm::clamp(_localProceduralSamples[i] + collisionSample,
-                                                  MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
+						    MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
 
             _drumSoundVolume *= (1.f - _drumSoundDecay);
         }

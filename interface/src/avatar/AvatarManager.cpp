@@ -66,17 +66,17 @@ void AvatarManager::updateOtherAvatars(float deltaTime) {
 }
 
 void AvatarManager::renderAvatars(bool forceRenderHead, bool selfAvatarOnly) {
-  const Menu* menu = Application::getInstance()->getMenu();
-  bool renderLookAtVectors = false;
-  if(menu){
-    if (!menu->isOptionChecked(MenuOption::Avatars)) {
-        return;
-    }
-    PerformanceWarning warn(menu->isOptionChecked(MenuOption::PipelineWarnings),
-                            "Application::renderAvatars()");
+    const Menu* menu = Application::getInstance()->getMenu();
+    bool renderLookAtVectors = false;
+    if(menu){
+	if (!menu->isOptionChecked(MenuOption::Avatars)) {
+	    return;
+	}
+	PerformanceWarning warn(menu->isOptionChecked(MenuOption::PipelineWarnings),
+				"Application::renderAvatars()");
 
-    renderLookAtVectors = menu->isOptionChecked(MenuOption::LookAtVectors);
-  }
+	renderLookAtVectors = menu->isOptionChecked(MenuOption::LookAtVectors);
+    }
     
     if (!selfAvatarOnly) {
         foreach (const AvatarSharedPointer& avatarPointer, _avatarHash) {
@@ -143,13 +143,13 @@ void AvatarManager::processDataServerResponse(const QString& userString, const Q
                     Avatar* avatar = static_cast<Avatar*>(matchingAvatar.data());
                     if (keyList[i] == DataServerKey::FaceMeshURL) {
                         qDebug() << "Changing mesh to" << valueList[i] << "for avatar with UUID"
-                            << uuidStringWithoutCurlyBraces(avatarKey);
+				 << uuidStringWithoutCurlyBraces(avatarKey);
                         
                         QMetaObject::invokeMethod(&(avatar->getHead().getFaceModel()),
                                                   "setURL", Q_ARG(QUrl, QUrl(valueList[i])));
                     } else if (keyList[i] == DataServerKey::SkeletonURL) {
                         qDebug() << "Changing skeleton to" << valueList[i] << "for avatar with UUID"
-                            << uuidStringWithoutCurlyBraces(avatarKey.toString());
+				 << uuidStringWithoutCurlyBraces(avatarKey.toString());
                         
                         QMetaObject::invokeMethod(&(avatar->getSkeletonModel()),
                                                   "setURL", Q_ARG(QUrl, QUrl(valueList[i])));

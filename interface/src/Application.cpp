@@ -432,7 +432,7 @@ void Application::initializeGL() {
 void Application::paintGL() {
     PerformanceWarning::setSuppressShortTimings(_menu->isOptionChecked(MenuOption::SuppressShortTimings));
 
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::paintGL()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::paintGL()");
 
     glEnable(GL_LINE_SMOOTH);
 
@@ -1508,10 +1508,6 @@ void Application::idle() {
     }
 }
 
-bool Application::getPipelineWarningsOption() {
-    return _menu->isOptionChecked(MenuOption::PipelineWarnings);
-}
-
 void Application::checkBandwidthMeterClick() {
     // ... to be called upon button release
     if (_menu->isOptionChecked(MenuOption::Bandwidth) &&
@@ -1969,7 +1965,7 @@ void Application::renderHighlightVoxel(VoxelDetail voxel) {
 
 void Application::updateMouseRay() {
 
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateMouseRay()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateMouseRay()");
 
     _viewFrustum.computePickRay(_mouseX / (float)_glWidget->width(), _mouseY / (float)_glWidget->height(),
 				_mouseRayOrigin, _mouseRayDirection);
@@ -1992,7 +1988,7 @@ void Application::updateMouseRay() {
 
 void Application::updateFaceshift() {
 
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateFaceshift()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateFaceshift()");
 
     //  Update faceshift
     _faceshift.update();
@@ -2005,7 +2001,7 @@ void Application::updateFaceshift() {
 
 void Application::updateMyAvatarLookAtPosition(glm::vec3& lookAtSpot) {
 
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateMyAvatarLookAtPosition()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateMyAvatarLookAtPosition()");
 
     const float FAR_AWAY_STARE = TREE_SCALE;
     if (_myCamera.getMode() == CAMERA_MODE_MIRROR) {
@@ -2034,7 +2030,7 @@ void Application::updateMyAvatarLookAtPosition(glm::vec3& lookAtSpot) {
 
 void Application::updateHoverVoxels(float deltaTime, float& distance, BoxFace& face) {
 
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateHoverVoxels()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateHoverVoxels()");
 
     //  If we have clicked on a voxel, update it's color
     if (_isHoverVoxelSounding) {
@@ -2061,7 +2057,7 @@ void Application::updateHoverVoxels(float deltaTime, float& distance, BoxFace& f
         // and make sure the tree is not already busy... because otherwise you'll have to wait.
         if (!_mousePressed) {
             {
-		PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateHoverVoxels() _voxels.findRayIntersection()");
+		PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateHoverVoxels() _voxels.findRayIntersection()");
                 _isHoverVoxel = _voxels.findRayIntersection(_mouseRayOrigin, _mouseRayDirection, _hoverVoxel, distance, face);
             }
             if (MAKE_SOUND_ON_VOXEL_HOVER && _isHoverVoxel &&
@@ -2080,7 +2076,7 @@ void Application::updateHoverVoxels(float deltaTime, float& distance, BoxFace& f
 
 void Application::updateMouseVoxels(float deltaTime, float& distance, BoxFace& face) {
 
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateMouseVoxels()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateMouseVoxels()");
 
     _mouseVoxel.s = 0.0f;
     bool wasInitialized = _mouseVoxelScaleInitialized;
@@ -2167,7 +2163,7 @@ void Application::updateMouseVoxels(float deltaTime, float& distance, BoxFace& f
 
 
 void Application::updateHandAndTouch(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateHandAndTouch()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateHandAndTouch()");
 
     //  Update from Touch
     if (_isTouchPressed) {
@@ -2177,21 +2173,21 @@ void Application::updateHandAndTouch(float deltaTime) {
 }
 
 void Application::updateLeap(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateLeap()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateLeap()");
 }
 
 void Application::updateSixense(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateSixense()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateSixense()");
 
     _sixenseManager.update(deltaTime);
 }
 
 void Application::updateSerialDevices(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateSerialDevices()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateSerialDevices()");
 }
 
 void Application::updateThreads(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateThreads()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateThreads()");
 
     // parse voxel packets
     if (!_enableProcessVoxelsThread) {
@@ -2203,14 +2199,14 @@ void Application::updateThreads(float deltaTime) {
 }
 
 void Application::updateParticles(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateParticles()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateParticles()");
     if (_menu->isOptionChecked(MenuOption::ParticleCloud)) {
         _cloud.simulate(deltaTime);
     }
 }
 
 void Application::updateMetavoxels(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateMetavoxels()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateMetavoxels()");
     if (_menu->isOptionChecked(MenuOption::Metavoxels)) {
 	if (_menu->isOptionChecked(MenuOption::Metavoxels)) {
 	    _metavoxels.simulate(deltaTime);
@@ -2219,7 +2215,7 @@ void Application::updateMetavoxels(float deltaTime) {
 }
 
 void Application::updateCamera(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateCamera()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateCamera()");
 
     if (!OculusManager::isConnected() && !TV3DManager::isConnected()) {
         if (_menu->isOptionChecked(MenuOption::FullscreenMirror)) {
@@ -2253,7 +2249,7 @@ void Application::updateCamera(float deltaTime) {
 
 
 void Application::updateDialogs(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateDialogs()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateDialogs()");
 
     // Update bandwidth dialog, if any
     BandwidthDialog* bandwidthDialog = _menu->getBandwidthDialog();
@@ -2267,7 +2263,7 @@ void Application::updateDialogs(float deltaTime) {
 }
 
 void Application::updateAudio(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateAudio()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateAudio()");
 
     //  Update audio stats for procedural sounds
     _audio.setLastAcceleration(_myAvatar->getThrust());
@@ -2275,7 +2271,7 @@ void Application::updateAudio(float deltaTime) {
 }
 
 void Application::updateCursor(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateCursor()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateCursor()");
 
     // watch mouse position, if it hasn't moved, hide the cursor
     bool underMouse = _glWidget->underMouse();
@@ -2298,7 +2294,7 @@ void Application::updateCursor(float deltaTime) {
 }
 
 void Application::update(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::update()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::update()");
 
     // check what's under the mouse and update the mouse voxel
     updateMouseRay();
@@ -2335,7 +2331,7 @@ void Application::update(float deltaTime) {
 }
 
 void Application::updateMyAvatar(float deltaTime) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::updateMyAvatar()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::updateMyAvatar()");
 
     _myAvatar->update(deltaTime);
 
@@ -2676,7 +2672,7 @@ void Application::setupWorldLight() {
 }
 
 void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::displaySide()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::displaySide()");
     // transform by eye offset
 
     // flip x if in mirror mode (also requires reversing winding order for backface culling)
@@ -2711,7 +2707,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
     //  Setup 3D lights (after the camera transform, so that they are positioned in world space)
     setupWorldLight();
     if (!selfAvatarOnly && _menu->isOptionChecked(MenuOption::Stars)) {
-	PerformanceWarning warn(getPipelineWarningsOption(),
+	PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 				"Application::displaySide() ... stars...");
 	if (!_stars.isStarsLoaded()) {
 	    _stars.generate(STARFIELD_NUM_STARS, STARFIELD_SEED);
@@ -2738,7 +2734,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
 
     // draw the sky dome
     if (!selfAvatarOnly && _menu->isOptionChecked(MenuOption::Atmosphere)) {
-	PerformanceWarning warn(getPipelineWarningsOption(),
+	PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 				"Application::displaySide() ... atmosphere...");
 	_environment.renderAtmospheres(whichCamera);
     }
@@ -2767,7 +2763,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
 	    }
 	    //  Draw voxels
 	    if (_menu->isOptionChecked(MenuOption::Voxels)) {
-		PerformanceWarning warn(getPipelineWarningsOption(),
+		PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 					"Application::displaySide() ... voxels...");
 		if (!_menu->isOptionChecked(MenuOption::DontRenderVoxels)) {
 		    _voxels.render(_menu->isOptionChecked(MenuOption::VoxelTextures));
@@ -2776,7 +2772,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
 
 	    // also, metavoxels
 	    if (_menu->isOptionChecked(MenuOption::Metavoxels)) {
-		PerformanceWarning warn(getPipelineWarningsOption(),
+		PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 					"Application::displaySide() ... metavoxels...");
 		_metavoxels.render();
 	    }
@@ -2787,7 +2783,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
 
 	// render the ambient occlusion effect if enabled
 	if (_menu->isOptionChecked(MenuOption::AmbientOcclusion)) {
-            PerformanceWarning warn(getPipelineWarningsOption(),
+            PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 				    "Application::displaySide() ... AmbientOcclusion...");
             _ambientOcclusionEffect.render();
 	}
@@ -2802,7 +2798,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
 
         // indicate what we'll be adding/removing in mouse mode, if anything
         if (_mouseVoxel.s != 0 && whichCamera.getMode() != CAMERA_MODE_MIRROR) {
-            PerformanceWarning warn(getPipelineWarningsOption(),
+            PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 				    "Application::displaySide() ... voxels TOOLS UX...");
 
             glDisable(GL_LIGHTING);
@@ -2850,7 +2846,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
         }
 
 	if (_menu->isOptionChecked(MenuOption::VoxelSelectMode) && _pasteMode && whichCamera.getMode() != CAMERA_MODE_MIRROR) {
-	    PerformanceWarning warn(getPipelineWarningsOption(),
+	    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 				    "Application::displaySide() ... PASTE Preview...");
 
 	    glPushMatrix();
@@ -2878,7 +2874,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
 
 	    // brad's frustum for debugging
 	    if (_menu->isOptionChecked(MenuOption::DisplayFrustum) && whichCamera.getMode() != CAMERA_MODE_MIRROR) {
-		PerformanceWarning warn(getPipelineWarningsOption(),
+		PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 					"Application::displaySide() ... renderViewFrustum...");
 		renderViewFrustum(_viewFrustum);
 	    }
@@ -2886,7 +2882,7 @@ void Application::displaySide(Camera& whichCamera, bool selfAvatarOnly) {
 
         // render voxel fades if they exist
         if (_voxelFades.size() > 0) {
-            PerformanceWarning warn(getPipelineWarningsOption(),
+            PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings),
 				    "Application::displaySide() ... voxel fades...");
             for(std::vector<VoxelFade>::iterator fade = _voxelFades.begin(); fade != _voxelFades.end();) {
                 fade->render();
@@ -2919,7 +2915,7 @@ void Application::computeOffAxisFrustum(float& left, float& right, float& bottom
 }
 
 void Application::displayOverlay() {
-    PerformanceWarning warn(getPipelineWarningsOption(), "Application::displayOverlay()");
+    PerformanceWarning warn(_menu->isOptionChecked(MenuOption::PipelineWarnings), "Application::displayOverlay()");
 
     //  Render 2D overlay:  I/O level bar graphs and text
     glMatrixMode(GL_PROJECTION);

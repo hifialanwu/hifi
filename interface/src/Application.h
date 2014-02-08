@@ -172,6 +172,8 @@ public:
     TextureCache* getTextureCache() { return &_textureCache; }
     GlowEffect* getGlowEffect() { return &_glowEffect; }
 
+    bool getPipelineWarningsOption(){return _menu->isOptionChecked(MenuOption::PipelineWarnings);}
+
     AvatarManager& getAvatarManager() { return _avatarManager; }
     Profile* getProfile() { return &_profile; }
     void resetProfile(const QString& username);
@@ -190,7 +192,7 @@ public:
 
     /// Computes the off-axis frustum parameters for the view frustum, taking mirroring into account.
     void computeOffAxisFrustum(float& left, float& right, float& bottom, float& top, float& nearVal,
-        float& farVal, glm::vec4& nearClipPlane, glm::vec4& farClipPlane) const;
+			       float& farVal, glm::vec4& nearClipPlane, glm::vec4& farClipPlane) const;
 
     VoxelShader& getVoxelShader() { return _voxelShader; }
     PointShader& getPointShader() { return _pointShader; }
@@ -207,8 +209,6 @@ public:
     void setIsHighlightVoxel(bool isHighlightVoxel) { _isHighlightVoxel = isHighlightVoxel; }
     
     void skipVersion(QString latestVersion);
-
-    bool getPipelineWarningsOption();
 
 signals:
 
@@ -237,7 +237,6 @@ public slots:
     void initAvatarAndViewFrustum();
 
 private slots:
-
     void timer();
     void idle();
 

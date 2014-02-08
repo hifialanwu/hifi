@@ -66,7 +66,7 @@ void DatagramProcessor::processDatagrams() {
                 case PacketTypeVoxelErase:
                 case PacketTypeOctreeStats:
                 case PacketTypeEnvironmentData: {
-		  PerformanceWarning warn(application->getPipelineWarningsOption(),
+		    PerformanceWarning warn(application->getPipelineWarningsOption(),
                                             "Application::networkReceive()... _voxelProcessor.queueReceivedPacket()");
                     
                     bool wantExtraDebugging = application->getLogger()->extraDebugging();

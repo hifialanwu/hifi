@@ -61,33 +61,33 @@ void VoxelPacketProcessor::processPacket(const HifiSockAddr& senderSockAddr, con
     voxelPacketType = packetTypeForPacket(mutablePacket);
     
     if(app->_menu){
-      if (app->_menu->isOptionChecked(MenuOption::Voxels)) {
-        app->trackIncomingVoxelPacket(mutablePacket, senderSockAddr, wasStatsPacket);
+	if (app->_menu->isOptionChecked(MenuOption::Voxels)) {
+	    app->trackIncomingVoxelPacket(mutablePacket, senderSockAddr, wasStatsPacket);
 
-        SharedNodePointer serverNode = NodeList::getInstance()->nodeWithAddress(senderSockAddr);
-        if (serverNode && serverNode->getActiveSocket() && *serverNode->getActiveSocket() == senderSockAddr) {
+	    SharedNodePointer serverNode = NodeList::getInstance()->nodeWithAddress(senderSockAddr);
+	    if (serverNode && serverNode->getActiveSocket() && *serverNode->getActiveSocket() == senderSockAddr) {
 
-	  switch(voxelPacketType) {
-	  case PacketTypeParticleErase: {
-	    app->_particles.processEraseMessage(mutablePacket, senderSockAddr, serverNode.data());
-	  } break;
+		switch(voxelPacketType) {
+		case PacketTypeParticleErase: {
+		    app->_particles.processEraseMessage(mutablePacket, senderSockAddr, serverNode.data());
+		} break;
 
-	  case PacketTypeParticleData: {
-	    app->_particles.processDatagram(mutablePacket, senderSockAddr, serverNode.data());
-	  } break;
+		case PacketTypeParticleData: {
+		    app->_particles.processDatagram(mutablePacket, senderSockAddr, serverNode.data());
+		} break;
 
-	  case PacketTypeEnvironmentData: {
-	    app->_environment.parseData(senderSockAddr, mutablePacket);
-	  } break;
+		case PacketTypeEnvironmentData: {
+		    app->_environment.parseData(senderSockAddr, mutablePacket);
+		} break;
 
-	  default : {
-	    app->_voxels.setDataSourceUUID(serverNode->getUUID());
-	    app->_voxels.parseData(mutablePacket);
-	    app->_voxels.setDataSourceUUID(QUuid());
-	  } break;
-	  }
-        }
-      }
+		default : {
+		    app->_voxels.setDataSourceUUID(serverNode->getUUID());
+		    app->_voxels.parseData(mutablePacket);
+		    app->_voxels.setDataSourceUUID(QUuid());
+		} break;
+		}
+	    }
+	}
     }
 }
 
