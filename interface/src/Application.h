@@ -39,6 +39,7 @@
 #include "MetavoxelSystem.h"
 #include "PacketHeaders.h"
 #include "PieMenu.h"
+#include "Menu.h"
 #include "Stars.h"
 #include "Swatch.h"
 #include "ToolsPalette.h"
@@ -82,7 +83,7 @@ class QMouseEvent;
 class QNetworkAccessManager;
 class QSettings;
 class QWheelEvent;
-
+class Menu;
 class Node;
 class ProgramObject;
 
@@ -194,6 +195,7 @@ public:
     VoxelShader& getVoxelShader() { return _voxelShader; }
     PointShader& getPointShader() { return _pointShader; }
     FileLogger* getLogger() { return _logger; }
+    Menu* getMenu() {return _menu;}
 
     glm::vec2 getViewportDimensions() const{ return glm::vec2(_glWidget->width(),_glWidget->height()); }
     NodeToJurisdictionMap& getVoxelServerJurisdictions() { return _voxelServerJurisdictions; }
@@ -205,6 +207,8 @@ public:
     void setIsHighlightVoxel(bool isHighlightVoxel) { _isHighlightVoxel = isHighlightVoxel; }
     
     void skipVersion(QString latestVersion);
+
+    bool getPipelineWarningsOption();
 
 signals:
 
@@ -233,6 +237,7 @@ public slots:
     void initAvatarAndViewFrustum();
 
 private slots:
+
     void timer();
     void idle();
 
@@ -379,6 +384,7 @@ private:
 
     SixenseManager _sixenseManager;
     QStringList _activeScripts;
+    Menu* _menu;
 
     Camera _myCamera;                  // My view onto the world
     Camera _viewFrustumOffsetCamera;   // The camera we use to sometimes show the view frustum from an offset mode

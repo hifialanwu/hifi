@@ -15,7 +15,8 @@
 #include "VoxelPacketProcessor.h"
 
 void VoxelPacketProcessor::processPacket(const HifiSockAddr& senderSockAddr, const QByteArray& packet) {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings),
+    Application* app = Application::getInstance();
+    PerformanceWarning warn(app->getPipelineWarningsOption(),
                             "VoxelPacketProcessor::processPacket()");
     
     QByteArray mutablePacket = packet;
@@ -27,7 +28,7 @@ void VoxelPacketProcessor::processPacket(const HifiSockAddr& senderSockAddr, con
     }
     ssize_t messageLength = mutablePacket.size();
 
-    Application* app = Application::getInstance();
+
     bool wasStatsPacket = false;
 
 
@@ -59,32 +60,34 @@ void VoxelPacketProcessor::processPacket(const HifiSockAddr& senderSockAddr, con
     
     voxelPacketType = packetTypeForPacket(mutablePacket);
     
-    if (Menu::getInstance()->isOptionChecked(MenuOption::Voxels)) {
+    if(app->_menu){
+      if (app->_menu->isOptionChecked(MenuOption::Voxels)) {
         app->trackIncomingVoxelPacket(mutablePacket, senderSockAddr, wasStatsPacket);
 
         SharedNodePointer serverNode = NodeList::getInstance()->nodeWithAddress(senderSockAddr);
         if (serverNode && serverNode->getActiveSocket() && *serverNode->getActiveSocket() == senderSockAddr) {
 
-            switch(voxelPacketType) {
-                case PacketTypeParticleErase: {
-                    app->_particles.processEraseMessage(mutablePacket, senderSockAddr, serverNode.data());
-                } break;
+	  switch(voxelPacketType) {
+	  case PacketTypeParticleErase: {
+	    app->_particles.processEraseMessage(mutablePacket, senderSockAddr, serverNode.data());
+	  } break;
 
-                case PacketTypeParticleData: {
-                    app->_particles.processDatagram(mutablePacket, senderSockAddr, serverNode.data());
-                } break;
+	  case PacketTypeParticleData: {
+	    app->_particles.processDatagram(mutablePacket, senderSockAddr, serverNode.data());
+	  } break;
 
-                case PacketTypeEnvironmentData: {
-                    app->_environment.parseData(senderSockAddr, mutablePacket);
-                } break;
+	  case PacketTypeEnvironmentData: {
+	    app->_environment.parseData(senderSockAddr, mutablePacket);
+	  } break;
 
-                default : {
-                    app->_voxels.setDataSourceUUID(serverNode->getUUID());
-                    app->_voxels.parseData(mutablePacket);
-                    app->_voxels.setDataSourceUUID(QUuid());
-                } break;
-            }
+	  default : {
+	    app->_voxels.setDataSourceUUID(serverNode->getUUID());
+	    app->_voxels.parseData(mutablePacket);
+	    app->_voxels.setDataSourceUUID(QUuid());
+	  } break;
+	  }
         }
+      }
     }
 }
 

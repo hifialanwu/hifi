@@ -22,14 +22,14 @@ DatagramProcessor::DatagramProcessor(QObject* parent) :
 }
 
 void DatagramProcessor::processDatagrams() {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings),
+    Application* application = Application::getInstance();
+    PerformanceWarning warn(application->getPipelineWarningsOption(),
                             "DatagramProcessor::processDatagrams()");
     
     HifiSockAddr senderSockAddr;
     
     static QByteArray incomingPacket;
     
-    Application* application = Application::getInstance();
     NodeList* nodeList = NodeList::getInstance();
     
     while (NodeList::getInstance()->getNodeSocket().hasPendingDatagrams()) {
@@ -66,7 +66,7 @@ void DatagramProcessor::processDatagrams() {
                 case PacketTypeVoxelErase:
                 case PacketTypeOctreeStats:
                 case PacketTypeEnvironmentData: {
-                    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings),
+		  PerformanceWarning warn(application->getPipelineWarningsOption(),
                                             "Application::networkReceive()... _voxelProcessor.queueReceivedPacket()");
                     
                     bool wantExtraDebugging = application->getLogger()->extraDebugging();

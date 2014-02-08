@@ -30,7 +30,11 @@ eyeFrustum TV3DManager::_rightEye;
 
 
 bool TV3DManager::isConnected() {
-    return Menu::getInstance()->isOptionChecked(MenuOption::Enable3DTVMode);
+  const Menu* menu = Application::getInstance()->getMenu();
+  if(menu){
+    return menu->isOptionChecked(MenuOption::Enable3DTVMode);
+  }
+  else return false;
 }
 
 void TV3DManager::connect() {

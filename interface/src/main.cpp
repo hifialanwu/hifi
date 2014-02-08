@@ -41,6 +41,7 @@ int main(int argc, const char * argv[]) {
         Application app(argc, const_cast<char**>(argv), startup_time);
     
         qDebug( "Created QT Application.");
+	//	Application::getInstance()->init();
         exitCode = app.exec();
     }
     qDebug("Normal exit.");

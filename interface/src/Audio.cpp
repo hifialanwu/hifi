@@ -63,7 +63,7 @@ Audio::Audio(Oscilloscope* scope, int16_t initialJitterBufferSamples, QObject* p
     _scope(scope),
     _averagedLatency(0.0),
     _measuredJitter(0),
-    _jitterBufferSamples(initialJitterBufferSamples),
+	_jitterBufferSamples(initialJitterBufferSamples),
     _lastInputLoudness(0),
     _lastVelocity(0),
     _lastAcceleration(0),
@@ -302,30 +302,32 @@ void Audio::handleAudioInput() {
 
     QByteArray inputByteArray = _inputDevice->readAll();
 
-    if (Menu::getInstance()->isOptionChecked(MenuOption::EchoLocalAudio) && !_muted) {
+    const Menu* menu = Application::getInstance()->getMenu();
+    if (menu){
+      if (menu->isOptionChecked(MenuOption::EchoLocalAudio) && !_muted) {
         // if this person wants local loopback add that to the locally injected audio
 
         if (!_loopbackOutputDevice) {
-            // we didn't have the loopback output device going so set that up now
-            _loopbackOutputDevice = _loopbackAudioOutput->start();
+	  // we didn't have the loopback output device going so set that up now
+	  _loopbackOutputDevice = _loopbackAudioOutput->start();
         }
 
         if (_inputFormat == _outputFormat) {
-            _loopbackOutputDevice->write(inputByteArray);
+	  _loopbackOutputDevice->write(inputByteArray);
         } else {
-            static float loopbackOutputToInputRatio = (_outputFormat.sampleRate() / (float) _inputFormat.sampleRate())
-                * (_outputFormat.channelCount() / _inputFormat.channelCount());
+	  static float loopbackOutputToInputRatio = (_outputFormat.sampleRate() / (float) _inputFormat.sampleRate())
+	    * (_outputFormat.channelCount() / _inputFormat.channelCount());
 
-            QByteArray loopBackByteArray(inputByteArray.size() * loopbackOutputToInputRatio, 0);
+	  QByteArray loopBackByteArray(inputByteArray.size() * loopbackOutputToInputRatio, 0);
 
-            linearResampling((int16_t*) inputByteArray.data(), (int16_t*) loopBackByteArray.data(),
-                             inputByteArray.size() / sizeof(int16_t),
-                             loopBackByteArray.size() / sizeof(int16_t), _inputFormat, _outputFormat);
+	  linearResampling((int16_t*) inputByteArray.data(), (int16_t*) loopBackByteArray.data(),
+			   inputByteArray.size() / sizeof(int16_t),
+			   loopBackByteArray.size() / sizeof(int16_t), _inputFormat, _outputFormat);
 
-            _loopbackOutputDevice->write(loopBackByteArray);
+	  _loopbackOutputDevice->write(loopBackByteArray);
         }
+      }
     }
-
     _inputRingBuffer.writeData(inputByteArray.data(), inputByteArray.size());
 
     while (_inputRingBuffer.samplesAvailable() > inputSamplesRequired) {
@@ -395,27 +397,29 @@ void Audio::handleAudioInput() {
 
             // we need the amount of bytes in the buffer + 1 for type
             // + 12 for 3 floats for position + float for bearing + 1 attenuation byte
-
-            PacketType packetType = Menu::getInstance()->isOptionChecked(MenuOption::EchoServerAudio)
+	    const Menu* menu = Application::getInstance()->getMenu();
+	    if(menu){
+	      PacketType packetType = menu->isOptionChecked(MenuOption::EchoServerAudio)
                 ? PacketTypeMicrophoneAudioWithEcho : PacketTypeMicrophoneAudioNoEcho;
 
-            char* currentPacketPtr = monoAudioDataPacket + populatePacketHeader(monoAudioDataPacket, packetType);
+	      char* currentPacketPtr = monoAudioDataPacket + populatePacketHeader(monoAudioDataPacket, packetType);
 
-            // memcpy the three float positions
-            memcpy(currentPacketPtr, &headPosition, sizeof(headPosition));
-            currentPacketPtr += (sizeof(headPosition));
+	      // memcpy the three float positions
+	      memcpy(currentPacketPtr, &headPosition, sizeof(headPosition));
+	      currentPacketPtr += (sizeof(headPosition));
 
-            // memcpy our orientation
-            memcpy(currentPacketPtr, &headOrientation, sizeof(headOrientation));
-            currentPacketPtr += sizeof(headOrientation);
+	      // memcpy our orientation
+	      memcpy(currentPacketPtr, &headOrientation, sizeof(headOrientation));
+	      currentPacketPtr += sizeof(headOrientation);
 
-            nodeList->getNodeSocket().writeDatagram(monoAudioDataPacket,
-                                                    NETWORK_BUFFER_LENGTH_BYTES_PER_CHANNEL + leadingBytes,
-                                                    audioMixer->getActiveSocket()->getAddress(),
-                                                    audioMixer->getActiveSocket()->getPort());
+	      nodeList->getNodeSocket().writeDatagram(monoAudioDataPacket,
+						      NETWORK_BUFFER_LENGTH_BYTES_PER_CHANNEL + leadingBytes,
+						      audioMixer->getActiveSocket()->getAddress(),
+						      audioMixer->getActiveSocket()->getPort());
 
-            Application::getInstance()->getBandwidthMeter()->outputStream(BandwidthMeter::AUDIO)
+	      Application::getInstance()->getBandwidthMeter()->outputStream(BandwidthMeter::AUDIO)
                 .updateValue(NETWORK_BUFFER_LENGTH_BYTES_PER_CHANNEL + leadingBytes);
+	    }
         }
         delete[] inputAudioSamples;
     }
@@ -442,7 +446,7 @@ void Audio::addReceivedAudioToBuffer(const QByteArray& audioByteArray) {
         //  Set jitter buffer to be a multiple of the measured standard deviation
         const int MAX_JITTER_BUFFER_SAMPLES = _ringBuffer.getSampleCapacity() / 2;
         const float NUM_STANDARD_DEVIATIONS = 3.f;
-        if (Menu::getInstance()->getAudioJitterBufferSamples() == 0) {
+        if (Application::getInstance()->getMenu()->getAudioJitterBufferSamples() == 0) {
             float newJitterBufferSamples = (NUM_STANDARD_DEVIATIONS * _measuredJitter) / 1000.f * SAMPLE_RATE;
             setJitterBufferSamples(glm::clamp((int)newJitterBufferSamples, 0, MAX_JITTER_BUFFER_SAMPLES));
         }
@@ -604,7 +608,7 @@ void Audio::render(int screenWidth, int screenHeight) {
         sprintf(out, "%.0f\n", getJitterBufferSamples() / SAMPLE_RATE * 1000.f);
         drawtext(startX + jitterBufferPels - 5, topY - 9, 0.10f, 0, 1, 2, out, 1, .2f, .4f);
         sprintf(out, "j %.1f\n", _measuredJitter);
-        if (Menu::getInstance()->getAudioJitterBufferSamples() == 0) {
+        if (Application::getInstance()->getMenu()->getAudioJitterBufferSamples() == 0) {
             drawtext(startX + jitterBufferPels - 5, bottomY + 12, 0.10f, 0, 1, 2, out, 1, .2f, .4f);
         } else {
             drawtext(startX, bottomY + 12, 0.10f, 0, 1, 2, out, 1, .2f, .4f);
@@ -720,7 +724,7 @@ void Audio::handleAudioByteArray(const QByteArray& audioByteArray) {
 
 void Audio::renderToolIcon(int screenHeight) {
 
-    int iconTop = Menu::getInstance()->isOptionChecked(MenuOption::Mirror) ? ICON_TOP_MIRROR : ICON_TOP;
+    int iconTop = Application::getInstance()->getMenu()->isOptionChecked(MenuOption::Mirror) ? ICON_TOP_MIRROR : ICON_TOP;
 
     _iconBounds = QRect(ICON_LEFT, iconTop, ICON_SIZE, ICON_SIZE);
     glEnable(GL_TEXTURE_2D);

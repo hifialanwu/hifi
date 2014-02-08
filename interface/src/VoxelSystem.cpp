@@ -107,7 +107,7 @@ void VoxelSystem::elementDeleted(OctreeElement* element) {
         if (_voxelsInWriteArrays != 0) {
             forceRemoveNodeFromArrays(voxel);
         } else {
-            if (Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings)) {
+	  if (Application::getInstance()->getPipelineWarningsOption()) {
                 printf("VoxelSystem::elementDeleted() while _voxelsInWriteArrays==0, is that expected? \n");
             }
         }
@@ -129,8 +129,8 @@ void VoxelSystem::elementUpdated(OctreeElement* element) {
     if (voxel->getVoxelSystem() == this) {
         bool shouldRender = false; // assume we don't need to render it
         // if it's colored, we might need to render it!
-        float voxelSizeScale = Menu::getInstance()->getVoxelSizeScale();
-        int boundaryLevelAdjust = Menu::getInstance()->getBoundaryLevelAdjust();
+        float voxelSizeScale = Application::getInstance()->getMenu()->getVoxelSizeScale();
+        int boundaryLevelAdjust = Application::getInstance()->getMenu()->getBoundaryLevelAdjust();
         shouldRender = voxel->calculateShouldRender(_viewFrustum, voxelSizeScale, boundaryLevelAdjust);
 
         if (voxel->getShouldRender() != shouldRender) {
@@ -199,7 +199,7 @@ void VoxelSystem::freeBufferIndex(glBufferIndex index) {
     bool inList = false;
 
     // make sure the index isn't already in the free list..., this is a debugging measure only done if you've enabled audits
-    if (Menu::getInstance()->isOptionChecked(MenuOption::AutomaticallyAuditTree)) {
+    if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::AutomaticallyAuditTree)) {
         for (unsigned long i = 0; i < _freeIndexes.size(); i++) {
             if (_freeIndexes[i] == index) {
                 printf("freeBufferIndex(glBufferIndex index)... index=%ld already in free list!", index);
@@ -224,8 +224,9 @@ void VoxelSystem::freeBufferIndex(glBufferIndex index) {
 
 // This will run through the list of _freeIndexes and reset their VBO array values to be "invisible".
 void VoxelSystem::clearFreeBufferIndexes() {
-    bool showWarnings = Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings);
+    bool showWarnings = Application::getInstance()->getPipelineWarningsOption();
     PerformanceWarning warn(showWarnings, "clearFreeBufferIndexes()");
+
     _voxelsInWriteArrays = 0; // reset our VBO
     _abandonedVBOSlots = 0;
 
@@ -298,7 +299,10 @@ void VoxelSystem::setVoxelsAsPoints(bool voxelsAsPoints) {
     // Voxels as points uses the VoxelShader memory model, so if we're not in voxel shader mode,
     // then set it to voxel shader mode.
     if (voxelsAsPoints) {
-        Menu::getInstance()->getUseVoxelShader()->setEnabled(false);
+      const Menu* menu = Application::getInstance()->getMenu();
+      if(menu){
+        menu->getUseVoxelShader()->setEnabled(false);
+      }
 
         // If enabling this... then do it before checking voxel shader status, that way, if voxel
         // shader is already enabled, we just start drawing as points.
@@ -311,7 +315,11 @@ void VoxelSystem::setVoxelsAsPoints(bool voxelsAsPoints) {
             _voxelShaderModeWhenVoxelsAsPointsEnabled = true;
         }
     } else {
-        Menu::getInstance()->getUseVoxelShader()->setEnabled(true);
+      const Menu* menu = Application::getInstance()->getMenu();
+      if(menu){
+      
+        menu->getUseVoxelShader()->setEnabled(true);
+      }
         // if we're turning OFF voxels as point mode, then we check what the state of voxel shader was when we enabled
         // voxels as points, if it was OFF, then we return it to that value.
         if (_voxelShaderModeWhenVoxelsAsPointsEnabled == false) {
@@ -548,7 +556,7 @@ bool VoxelSystem::readFromSchematicFile(const char* filename) {
 }
 
 int VoxelSystem::parseData(const QByteArray& packet) {
-    bool showTimingDetails = Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings);
+  bool showTimingDetails = Application::getInstance()->getPipelineWarningsOption();
     PerformanceWarning warn(showTimingDetails, "VoxelSystem::parseData()",showTimingDetails);
 
     PacketType command = packetTypeForPacket(packet);
@@ -630,8 +638,11 @@ int VoxelSystem::parseData(const QByteArray& packet) {
 }
 
 void VoxelSystem::setupNewVoxelsForDrawing() {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings),
-                            "setupNewVoxelsForDrawing()");
+    const Menu* menu = Application::getInstance()->getMenu();
+    if(menu){
+      PerformanceWarning warn(menu->isOptionChecked(MenuOption::PipelineWarnings),
+			      "setupNewVoxelsForDrawing()");
+    }
 
     if (!_initialized) {
         return; // bail early if we're not initialized
@@ -650,10 +661,14 @@ void VoxelSystem::setupNewVoxelsForDrawing() {
     bool didWriteFullVBO = _writeRenderFullVBO;
     if (_tree->isDirty()) {
         static char buffer[64] = { 0 };
-        if (Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings)) {
+	if(menu){
+	  if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings)) {
             sprintf(buffer, "newTreeToArrays() _writeRenderFullVBO=%s", debug::valueOf(_writeRenderFullVBO));
-        };
-        PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), buffer);
+	  };
+	}
+	if(menu){
+	  PerformanceWarning warn(Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings), buffer);
+	}
         _callsToTreesToArrays++;
         if (_writeRenderFullVBO) {
             clearFreeBufferIndexes();
@@ -698,7 +713,7 @@ void VoxelSystem::setupNewVoxelsForDrawing() {
 }
 
 void VoxelSystem::setupNewVoxelsForDrawingSingleNode(bool allowBailEarly) {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings),
+    PerformanceWarning warn(Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings),
                             "setupNewVoxelsForDrawingSingleNode() xxxxx");
 
     quint64 start = usecTimestampNow();
@@ -712,7 +727,7 @@ void VoxelSystem::setupNewVoxelsForDrawingSingleNode(bool allowBailEarly) {
 
     // lock on the buffer write lock so we can't modify the data when the GPU is reading it
     {
-        PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings),
+        PerformanceWarning warn(Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings),
                                 "setupNewVoxelsForDrawingSingleNode()... _bufferWriteLock.lock();" );
         _bufferWriteLock.lock();
     }
@@ -735,7 +750,7 @@ void VoxelSystem::setupNewVoxelsForDrawingSingleNode(bool allowBailEarly) {
 
 void VoxelSystem::checkForCulling() {
 
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), "checkForCulling()");
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), "checkForCulling()");
     quint64 start = usecTimestampNow();
 
     // track how long its been since we were last moving. If we have recently moved then only use delta frustums, if
@@ -776,7 +791,7 @@ void VoxelSystem::checkForCulling() {
 
     quint64 sinceLastAudit = (start - _lastAudit) / 1000;
 
-    if (Menu::getInstance()->isOptionChecked(MenuOption::AutomaticallyAuditTree)) {
+    if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::AutomaticallyAuditTree)) {
         if (sinceLastAudit >= std::max((float) _lastViewCullingElapsed, VIEW_CULLING_RATE_IN_MILLISECONDS)) {
             _lastAudit = start;
             collectStatsForTreesAndVBOs();
@@ -785,10 +800,10 @@ void VoxelSystem::checkForCulling() {
 }
 
 void VoxelSystem::cleanupRemovedVoxels() {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), "cleanupRemovedVoxels()");
+    PerformanceWarning warn(Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings), "cleanupRemovedVoxels()");
     // This handles cleanup of voxels that were culled as part of our regular out of view culling operation
     if (!_removedVoxels.isEmpty()) {
-        if (Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings)) {
+        if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings)) {
             qDebug() << "cleanupRemovedVoxels().. _removedVoxels=" << _removedVoxels.count();
         }
         while (!_removedVoxels.isEmpty()) {
@@ -801,7 +816,7 @@ void VoxelSystem::cleanupRemovedVoxels() {
     // are abandonded we want to rerender our full VBOs
     const float TOO_MANY_ABANDONED_RATIO = 0.5f;
     if (!_writeRenderFullVBO && (_abandonedVBOSlots > (_voxelsInWriteArrays * TOO_MANY_ABANDONED_RATIO))) {
-        if (Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings)) {
+        if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings)) {
             qDebug() << "cleanupRemovedVoxels().. _abandonedVBOSlots ["
                 << _abandonedVBOSlots << "] > TOO_MANY_ABANDONED_RATIO";
         }
@@ -877,8 +892,11 @@ void VoxelSystem::copyWrittenDataSegmentToReadArrays(glBufferIndex segmentStart,
 }
 
 void VoxelSystem::copyWrittenDataToReadArrays(bool fullVBOs) {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings),
+  const Menu* menu = Application::getInstance()->getMenu();
+  if (menu){
+    PerformanceWarning warn(menu->isOptionChecked(MenuOption::PipelineWarnings),
                             "copyWrittenDataToReadArrays()");
+  }
 
     if (_voxelsDirty && _voxelsUpdated) {
         if (fullVBOs) {
@@ -893,8 +911,13 @@ int VoxelSystem::newTreeToArrays(VoxelTreeElement* voxel) {
     int   voxelsUpdated   = 0;
     bool  shouldRender    = false; // assume we don't need to render it
     // if it's colored, we might need to render it!
-    float voxelSizeScale = Menu::getInstance()->getVoxelSizeScale();;
-    int boundaryLevelAdjust = Menu::getInstance()->getBoundaryLevelAdjust();
+    const Menu* menu = Application::getInstance()->getMenu();
+    float voxelSizeScale = 1;
+    int boundaryLevelAdjust = 0;
+    if(menu){
+      voxelSizeScale = menu->getVoxelSizeScale();;
+      boundaryLevelAdjust = menu->getBoundaryLevelAdjust();
+    }
     shouldRender = voxel->calculateShouldRender(_viewFrustum, voxelSizeScale, boundaryLevelAdjust);
 
     voxel->setShouldRender(shouldRender);
@@ -1084,7 +1107,7 @@ void VoxelSystem::changeTree(VoxelTree* newTree) {
 }
 
 void VoxelSystem::updateFullVBOs() {
-    bool outputWarning = Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings);
+    bool outputWarning = Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings);
     PerformanceWarning warn(outputWarning, "updateFullVBOs()");
 
     {
@@ -1135,11 +1158,11 @@ void VoxelSystem::updatePartialVBOs() {
 
 void VoxelSystem::updateVBOs() {
     static char buffer[40] = { 0 };
-    if (Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings)) {
+    if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings)) {
         sprintf(buffer, "updateVBOs() _readRenderFullVBO=%s", debug::valueOf(_readRenderFullVBO));
     };
     // would like to include _callsToTreesToArrays
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), buffer);
+    PerformanceWarning warn(Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings), buffer);
     if (_voxelsDirty) {
         if (_readRenderFullVBO) {
             updateFullVBOs();
@@ -1153,7 +1176,7 @@ void VoxelSystem::updateVBOs() {
 }
 
 void VoxelSystem::updateVBOSegment(glBufferIndex segmentStart, glBufferIndex segmentEnd) {
-    bool showWarning = Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings);
+    bool showWarning = Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings);
     PerformanceWarning warn(showWarning, "updateVBOSegment()");
 
     if (_useVoxelShader) {
@@ -1198,7 +1221,7 @@ void VoxelSystem::updateVBOSegment(glBufferIndex segmentStart, glBufferIndex seg
 }
 
 void VoxelSystem::render(bool texture) {
-    bool showWarnings = Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings);
+    bool showWarnings = Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings);
     PerformanceWarning warn(showWarnings, "render()");
 
     // If we got here and we're not initialized then bail!
@@ -1208,7 +1231,7 @@ void VoxelSystem::render(bool texture) {
 
     updateVBOs();
 
-    bool dontCallOpenGLDraw = Menu::getInstance()->isOptionChecked(MenuOption::DontCallOpenGLForVoxels);
+    bool dontCallOpenGLDraw = Application::getInstance()->getMenu()->isOptionChecked(MenuOption::DontCallOpenGLForVoxels);
     // if not don't... then do...
     if (_useVoxelShader) {
         PerformanceWarning warn(showWarnings,"render().. _useVoxelShader openGL..");
@@ -1352,7 +1375,7 @@ void VoxelSystem::render(bool texture) {
 
 void VoxelSystem::applyScaleAndBindProgram(bool texture) {
 
-    if (Menu::getInstance()->isOptionChecked(MenuOption::Shadows)) {
+    if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::Shadows)) {
         _shadowMapProgram.bind();
         glBindTexture(GL_TEXTURE_2D, Application::getInstance()->getTextureCache()->getShadowDepthTextureID());
         glEnable(GL_TEXTURE_GEN_S);
@@ -1377,7 +1400,7 @@ void VoxelSystem::removeScaleAndReleaseProgram(bool texture) {
     // scale back down to 1 so heads aren't massive
     glPopMatrix();
 
-    if (Menu::getInstance()->isOptionChecked(MenuOption::Shadows)) {
+    if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::Shadows)) {
         _shadowMapProgram.release();
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_TEXTURE_GEN_S);
@@ -1394,7 +1417,7 @@ void VoxelSystem::removeScaleAndReleaseProgram(bool texture) {
 int VoxelSystem::_nodeCount = 0;
 
 void VoxelSystem::killLocalVoxels() {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+  PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "VoxelSystem::killLocalVoxels()");
     _tree->lockForWrite();
     _tree->eraseAllOctreeElements();
@@ -1417,15 +1440,16 @@ bool VoxelSystem::clearAllNodesBufferIndexOperation(OctreeElement* element, void
 }
 
 void VoxelSystem::clearAllNodesBufferIndex() {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "VoxelSystem::clearAllNodesBufferIndex()");
     _nodeCount = 0;
     _tree->lockForRead(); // we won't change the tree so it's ok to treat this as a read
     _tree->recurseTreeWithOperation(clearAllNodesBufferIndexOperation);
     _tree->unlock();
-    if (Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings)) {
-        qDebug("clearing buffer index of %d nodes", _nodeCount);
+    if (Application::getInstance()->getPipelineWarningsOption()) {
+      qDebug("clearing buffer index of %d nodes", _nodeCount);
     }
+   
 }
 
 bool VoxelSystem::forceRedrawEntireTreeOperation(OctreeElement* element, void* extraData) {
@@ -1484,7 +1508,7 @@ bool VoxelSystem::trueColorizeOperation(OctreeElement* element, void* extraData)
 }
 
 void VoxelSystem::trueColorize() {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "trueColorize()",true);
     _nodeCount = 0;
     _tree->recurseTreeWithOperation(trueColorizeOperation);
@@ -1793,7 +1817,7 @@ bool VoxelSystem::hasViewChanged() {
 }
 
 void VoxelSystem::removeOutOfView() {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), "removeOutOfView()");
+    PerformanceWarning warn(Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings), "removeOutOfView()");
     removeOutOfViewArgs args(this);
     _tree->recurseTreeWithOperation(removeOutOfViewOperation,(void*)&args);
 
@@ -1825,11 +1849,11 @@ public:
 };
 
 void VoxelSystem::showAllLocalVoxels() {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), "showAllLocalVoxels()");
+    PerformanceWarning warn(Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings), "showAllLocalVoxels()");
     showAllLocalVoxelsArgs args(this);
     _tree->recurseTreeWithOperation(showAllLocalVoxelsOperation,(void*)&args);
 
-    bool showRemoveDebugDetails = Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings);
+    bool showRemoveDebugDetails = Application::getInstance()->getMenu()->isOptionChecked(MenuOption::PipelineWarnings);
     if (showRemoveDebugDetails) {
         qDebug("showAllLocalVoxels() scanned=%ld",args.nodesScanned );
     }
@@ -1841,8 +1865,8 @@ bool VoxelSystem::showAllLocalVoxelsOperation(OctreeElement* element, void* extr
 
     args->nodesScanned++;
 
-    float voxelSizeScale = Menu::getInstance()->getVoxelSizeScale();;
-    int boundaryLevelAdjust = Menu::getInstance()->getBoundaryLevelAdjust();
+    float voxelSizeScale = Application::getInstance()->getMenu()->getVoxelSizeScale();;
+    int boundaryLevelAdjust = Application::getInstance()->getMenu()->getBoundaryLevelAdjust();
     bool shouldRender = voxel->calculateShouldRender(&args->thisViewFrustum, voxelSizeScale, boundaryLevelAdjust);
     voxel->setShouldRender(shouldRender);
 
@@ -1920,7 +1944,7 @@ void VoxelSystem::hideOutOfView(bool forceFullFrustum) {
 
     _inhideOutOfView = true;
 
-    bool showDebugDetails = Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings);
+    bool showDebugDetails = Application::getInstance()->getPipelineWarningsOption();
     PerformanceWarning warn(showDebugDetails, "hideOutOfView()");
     bool widenFrustum = true;
 
@@ -1956,7 +1980,7 @@ void VoxelSystem::hideOutOfView(bool forceFullFrustum) {
     }
 
     {
-        PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+        PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "VoxelSystem::... recurseTreeWithOperation(hideOutOfViewOperation)");
         _tree->lockForRead();
         _tree->recurseTreeWithOperation(hideOutOfViewOperation,(void*)&args);
@@ -2043,8 +2067,14 @@ bool VoxelSystem::showAllSubTreeOperation(OctreeElement* element, void* extraDat
 
     args->nodesInside++;
 
-    float voxelSizeScale = Menu::getInstance()->getVoxelSizeScale();
-    int boundaryLevelAdjust = Menu::getInstance()->getBoundaryLevelAdjust();
+    const Menu* menu = Application::getInstance()->getMenu();
+    float voxelSizeScale = 1;
+    int boundaryLevelAdjust = 0;
+
+    if (menu){
+      voxelSizeScale = menu->getVoxelSizeScale();
+      boundaryLevelAdjust = menu->getBoundaryLevelAdjust();
+    }
     bool shouldRender = voxel->calculateShouldRender(&args->thisViewFrustum, voxelSizeScale, boundaryLevelAdjust);
     voxel->setShouldRender(shouldRender);
 
@@ -2159,7 +2189,7 @@ bool VoxelSystem::hideOutOfViewOperation(OctreeElement* element, void* extraData
 bool VoxelSystem::findRayIntersection(const glm::vec3& origin, const glm::vec3& direction,
                                       VoxelDetail& detail, float& distance, BoxFace& face) {
 
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "VoxelSystem::findRayIntersection()");
     bool result = false; // assume no intersection
     if (_tree->tryLockForRead()) {
@@ -2181,7 +2211,7 @@ bool VoxelSystem::findRayIntersection(const glm::vec3& origin, const glm::vec3& 
 }
 
 bool VoxelSystem::findSpherePenetration(const glm::vec3& center, float radius, glm::vec3& penetration) {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "VoxelSystem::findSpherePenetration()");
     bool result = false; // assume no penetration
     if (_tree->tryLockForRead()) {
@@ -2192,7 +2222,7 @@ bool VoxelSystem::findSpherePenetration(const glm::vec3& center, float radius, g
 }
 
 bool VoxelSystem::findCapsulePenetration(const glm::vec3& start, const glm::vec3& end, float radius, glm::vec3& penetration) {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "VoxelSystem::findCapsulePenetration()");
     bool result = false; // assume no penetration
     if (_tree->tryLockForRead()) {
@@ -2374,7 +2404,7 @@ void VoxelSystem::collectStatsForTreesAndVBOs() {
 
 
 void VoxelSystem::deleteVoxelAt(float x, float y, float z, float s) {
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "VoxelSystem::deleteVoxelAt()");
     _tree->lockForWrite();
     _tree->deleteVoxelAt(x, y, z, s);
@@ -2391,7 +2421,7 @@ VoxelTreeElement* VoxelSystem::getVoxelAt(float x, float y, float z, float s) co
 void VoxelSystem::createVoxel(float x, float y, float z, float s,
                               unsigned char red, unsigned char green, unsigned char blue, bool destructive) {
 
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings), 
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), 
                             "VoxelSystem::createVoxel()");
 
     _tree->lockForWrite();

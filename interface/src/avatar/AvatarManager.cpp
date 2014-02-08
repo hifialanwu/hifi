@@ -34,8 +34,7 @@ void AvatarManager::init() {
 }
 
 void AvatarManager::updateOtherAvatars(float deltaTime) {
-    bool showWarnings = Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings);
-    PerformanceWarning warn(showWarnings, "Application::updateAvatars()");
+    PerformanceWarning warn(Application::getInstance()->getPipelineWarningsOption(), "Application::updateAvatars()");
 
     Application* applicationInstance = Application::getInstance();
     glm::vec3 mouseOrigin = applicationInstance->getMouseRayOrigin();
@@ -67,12 +66,17 @@ void AvatarManager::updateOtherAvatars(float deltaTime) {
 }
 
 void AvatarManager::renderAvatars(bool forceRenderHead, bool selfAvatarOnly) {
-    if (!Menu::getInstance()->isOptionChecked(MenuOption::Avatars)) {
+  const Menu* menu = Application::getInstance()->getMenu();
+  bool renderLookAtVectors = false;
+  if(menu){
+    if (!menu->isOptionChecked(MenuOption::Avatars)) {
         return;
     }
-    PerformanceWarning warn(Menu::getInstance()->isOptionChecked(MenuOption::PipelineWarnings),
+    PerformanceWarning warn(menu->isOptionChecked(MenuOption::PipelineWarnings),
                             "Application::renderAvatars()");
-    bool renderLookAtVectors = Menu::getInstance()->isOptionChecked(MenuOption::LookAtVectors);
+
+    renderLookAtVectors = menu->isOptionChecked(MenuOption::LookAtVectors);
+  }
     
     if (!selfAvatarOnly) {
         foreach (const AvatarSharedPointer& avatarPointer, _avatarHash) {

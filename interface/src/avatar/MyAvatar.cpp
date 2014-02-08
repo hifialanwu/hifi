@@ -88,25 +88,28 @@ void MyAvatar::setMoveTarget(const glm::vec3 moveTarget) {
 
 void MyAvatar::updateTransmitter(float deltaTime) {
     // no transmitter drive implies transmitter pick
-    if (!Menu::getInstance()->isOptionChecked(MenuOption::TransmitterDrive) && _transmitter.isConnected()) {
-        _transmitterPickStart = getChestPosition();
-        glm::vec3 direction = getOrientation() * glm::quat(glm::radians(_transmitter.getEstimatedRotation())) * IDENTITY_FRONT;
+  const Menu* menu = Application::getInstance()->getMenu();
+  if(menu){
+    if (!menu->isOptionChecked(MenuOption::TransmitterDrive) && _transmitter.isConnected()) {
+      _transmitterPickStart = getChestPosition();
+      glm::vec3 direction = getOrientation() * glm::quat(glm::radians(_transmitter.getEstimatedRotation())) * IDENTITY_FRONT;
 
-        // check against voxels, avatars
-        const float MAX_PICK_DISTANCE = 100.0f;
-        float minDistance = MAX_PICK_DISTANCE;
-        VoxelDetail detail;
-        float distance;
-        BoxFace face;
-        VoxelSystem* voxels = Application::getInstance()->getVoxels();
-        if (voxels->findRayIntersection(_transmitterPickStart, direction, detail, distance, face)) {
-            minDistance = min(minDistance, distance);
-        }
-        _transmitterPickEnd = _transmitterPickStart + direction * minDistance;
+      // check against voxels, avatars
+      const float MAX_PICK_DISTANCE = 100.0f;
+      float minDistance = MAX_PICK_DISTANCE;
+      VoxelDetail detail;
+      float distance;
+      BoxFace face;
+      VoxelSystem* voxels = Application::getInstance()->getVoxels();
+      if (voxels->findRayIntersection(_transmitterPickStart, direction, detail, distance, face)) {
+	minDistance = min(minDistance, distance);
+      }
+      _transmitterPickEnd = _transmitterPickStart + direction * minDistance;
 
     } else {
-        _transmitterPickStart = _transmitterPickEnd = glm::vec3();
+      _transmitterPickStart = _transmitterPickEnd = glm::vec3();
     }
+  }
 }
 
 void MyAvatar::update(float deltaTime) {
@@ -128,7 +131,10 @@ void MyAvatar::update(float deltaTime) {
     //_pitchFromTouch += ((_touchAvgY - _lastTouchAvgY) * TOUCH_PITCH_SCALE * FIXED_TOUCH_TIMESTEP);
 
     // Update my avatar's state from gyros
-    updateFromGyros(Menu::getInstance()->isOptionChecked(MenuOption::TurnWithHead));
+    const Menu* menu = Application::getInstance()->getMenu();
+    if(menu){
+      updateFromGyros(menu->isOptionChecked(MenuOption::TurnWithHead));
+    }
 
     // Update head mouse from faceshift if active
     Faceshift* faceshift = Application::getInstance()->getFaceshift();
@@ -158,11 +164,13 @@ void MyAvatar::update(float deltaTime) {
 
     //  Get audio loudness data from audio input device
     _head.setAudioLoudness(Application::getInstance()->getAudio()->getLastInputLoudness());
-
-    if (Menu::getInstance()->isOptionChecked(MenuOption::Gravity)) {
+    
+    if(menu){
+      if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::Gravity)) {
         setGravity(Application::getInstance()->getEnvironment()->getGravity(getPosition()));
-    } else {
+      } else {
         setGravity(glm::vec3(0.0f, 0.0f, 0.0f));
+      }
     }
 
     simulate(deltaTime);
@@ -410,7 +418,7 @@ void MyAvatar::updateFromGyros(bool turnWithHead) {
         -MAX_LEAN, MAX_LEAN));
 
     // if Faceshift drive is enabled, set the avatar drive based on the head position
-    if (!Menu::getInstance()->isOptionChecked(MenuOption::MoveWithLean)) {
+    if (!Application::getInstance()->getMenu()->isOptionChecked(MenuOption::MoveWithLean)) {
         return;
     }
 
@@ -756,7 +764,9 @@ void MyAvatar::updateThrust(float deltaTime) {
     }
 
     //  Add thrusts from Transmitter
-    if (Menu::getInstance()->isOptionChecked(MenuOption::TransmitterDrive) && _transmitter.isConnected()) {
+    const Menu* menu = Application::getInstance()->getMenu();
+    if(menu){
+      if (menu->isOptionChecked(MenuOption::TransmitterDrive) && _transmitter.isConnected()) {
         _transmitter.checkForLostTransmitter();
         glm::vec3 rotation = _transmitter.getEstimatedRotation();
         const float TRANSMITTER_MIN_RATE = 1.f;
@@ -768,21 +778,22 @@ void MyAvatar::updateThrust(float deltaTime) {
         const float TRANSMITTER_LIFT_SCALE = 3.f;
         const float TOUCH_POSITION_RANGE_HALF = 32767.f;
         if (fabs(rotation.z) > TRANSMITTER_MIN_RATE) {
-            _thrust += rotation.z * TRANSMITTER_LATERAL_FORCE_SCALE * deltaTime * right;
+	  _thrust += rotation.z * TRANSMITTER_LATERAL_FORCE_SCALE * deltaTime * right;
         }
         if (fabs(rotation.x) > TRANSMITTER_MIN_RATE) {
-            _thrust += -rotation.x * TRANSMITTER_FWD_FORCE_SCALE * deltaTime * front;
+	  _thrust += -rotation.x * TRANSMITTER_FWD_FORCE_SCALE * deltaTime * front;
         }
         if (fabs(rotation.y) > TRANSMITTER_MIN_YAW_RATE) {
-            _bodyYawDelta += rotation.y * TRANSMITTER_YAW_SCALE * deltaTime;
+	  _bodyYawDelta += rotation.y * TRANSMITTER_YAW_SCALE * deltaTime;
         }
         if (_transmitter.getTouchState()->state == 'D') {
-            _thrust += TRANSMITTER_UP_FORCE_SCALE *
+	  _thrust += TRANSMITTER_UP_FORCE_SCALE *
             (float)(_transmitter.getTouchState()->y - TOUCH_POSITION_RANGE_HALF) / TOUCH_POSITION_RANGE_HALF *
             TRANSMITTER_LIFT_SCALE *
             deltaTime *
             up;
         }
+      }
     }
     //  Add thrust and rotation from hand controllers
     const float THRUST_MAG_HAND_JETS = THRUST_MAG_FWD;
@@ -968,9 +979,12 @@ bool operator<(const SortedAvatar& s1, const SortedAvatar& s2) {
 }
 
 void MyAvatar::updateChatCircle(float deltaTime) {
-    if (!(_isChatCirclingEnabled = Menu::getInstance()->isOptionChecked(MenuOption::ChatCircling))) {
+  const Menu* menu = Application::getInstance()->getMenu();
+  if(menu){
+    if (!(_isChatCirclingEnabled = menu->isOptionChecked(MenuOption::ChatCircling))) {
         return;
     }
+  }
 
     // find all circle-enabled members and sort by distance
     QVector<SortedAvatar> sortedAvatars;

@@ -17,7 +17,7 @@
 
 #include <VoxelConstants.h>
 
-#include "Menu.h"
+#include "Application.h"
 #include "ui/LodToolsDialog.h"
 
 
@@ -42,7 +42,7 @@ LodToolsDialog::LodToolsDialog(QWidget* parent) :
     _lodSize->setTickPosition(QSlider::TicksBelow);
     _lodSize->setFixedWidth(SLIDER_WIDTH);
     _lodSize->setPageStep(PAGE_STEP_LOD_SIZE);
-    int sliderValue = Menu::getInstance()->getVoxelSizeScale() / TREE_SCALE;
+    int sliderValue = Application::getInstance()->getMenu()->getVoxelSizeScale() / TREE_SCALE;
     _lodSize->setValue(sliderValue);
     form->addRow("LOD Size Scale:", _lodSize);
     connect(_lodSize,SIGNAL(valueChanged(int)),this,SLOT(sizeScaleValueChanged(int)));
@@ -57,7 +57,7 @@ LodToolsDialog::LodToolsDialog(QWidget* parent) :
     _boundaryLevelAdjust->setTickInterval(STEP_ADJUST);
     _boundaryLevelAdjust->setTickPosition(QSlider::TicksBelow);
     _boundaryLevelAdjust->setFixedWidth(SLIDER_WIDTH);
-    sliderValue = Menu::getInstance()->getBoundaryLevelAdjust();
+    sliderValue = Application::getInstance()->getMenu()->getBoundaryLevelAdjust();
     _boundaryLevelAdjust->setValue(sliderValue);
     form->addRow("Boundary Level Adjust:", _boundaryLevelAdjust);
     connect(_boundaryLevelAdjust,SIGNAL(valueChanged(int)),this,SLOT(boundaryLevelValueChanged(int)));
@@ -83,7 +83,7 @@ LodToolsDialog::LodToolsDialog(QWidget* parent) :
 
 QString LodToolsDialog::getFeedbackText() {
     // determine granularity feedback
-    int boundaryLevelAdjust = Menu::getInstance()->getBoundaryLevelAdjust();
+    int boundaryLevelAdjust = Application::getInstance()->getMenu()->getBoundaryLevelAdjust();
     QString granularityFeedback;
 
     switch (boundaryLevelAdjust) {
@@ -102,7 +102,7 @@ QString LodToolsDialog::getFeedbackText() {
     }
 
     // distance feedback    
-    float voxelSizeScale = Menu::getInstance()->getVoxelSizeScale();
+    float voxelSizeScale = Application::getInstance()->getMenu()->getVoxelSizeScale();
     float relativeToDefault = voxelSizeScale / DEFAULT_OCTREE_SIZE_SCALE;
     QString result;
     if (relativeToDefault > 1.01) {
@@ -123,13 +123,13 @@ LodToolsDialog::~LodToolsDialog() {
 
 void LodToolsDialog::sizeScaleValueChanged(int value) {
     float realValue = value * TREE_SCALE;
-    Menu::getInstance()->setVoxelSizeScale(realValue);
+    Application::getInstance()->getMenu()->setVoxelSizeScale(realValue);
     
     _feedback->setText(getFeedbackText());
 }
 
 void LodToolsDialog::boundaryLevelValueChanged(int value) {
-    Menu::getInstance()->setBoundaryLevelAdjust(value);
+    Application::getInstance()->getMenu()->setBoundaryLevelAdjust(value);
     _feedback->setText(getFeedbackText());
 }
 

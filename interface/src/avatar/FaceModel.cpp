@@ -12,6 +12,7 @@
 #include "FaceModel.h"
 #include "Head.h"
 #include "Menu.h"
+#include "Application.h"
 
 FaceModel::FaceModel(Head* owningHead) :
     _owningHead(owningHead)
@@ -47,8 +48,11 @@ bool FaceModel::render(float alpha) {
     if (!Model::render(alpha)) {
         return false;
     }
-    if (Menu::getInstance()->isOptionChecked(MenuOption::CollisionProxies)) {
+    const Menu* menu = Application::getInstance()->getMenu();
+    if(menu){
+      if (menu->isOptionChecked(MenuOption::CollisionProxies)) {
         renderCollisionProxies(alpha);
+      }
     }
     return true;
 }

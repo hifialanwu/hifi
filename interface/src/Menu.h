@@ -44,10 +44,12 @@ class VoxelStatsDialog;
 class Menu : public QMenuBar, public AbstractMenuInterface {
     Q_OBJECT
 public:
-    static Menu* getInstance();
+    Menu();
     ~Menu();
 
-    bool isOptionChecked(const QString& menuOption);
+    void init();
+
+    bool isOptionChecked(const QString& menuOption) const;
     void triggerOption(const QString& menuOption);
     QAction* getActionForOption(const QString& menuOption);
     bool isVoxelModeActionChecked();
@@ -84,6 +86,10 @@ public:
                                            QAction::MenuRole role = QAction::NoRole);
     virtual void removeAction(QMenu* menu, const QString& actionName);
 
+    //signals:
+    //    void checkAction(QString actionName);
+    //    void uncheckAction(Qstring actionName);
+
 public slots:
     void bandwidthDetails();
     void voxelStatsDetails();
@@ -113,9 +119,6 @@ private slots:
     void audioMuteToggled();
 
 private:
-    static Menu* _instance;
-
-    Menu();
 
     typedef void(*settingsAction)(QSettings*, QAction*);
     static void loadAction(QSettings* set, QAction* action);
