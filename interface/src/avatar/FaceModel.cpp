@@ -49,7 +49,7 @@ bool FaceModel::render(float alpha) {
         return false;
     }
     const Menu* menu = Application::getInstance()->getMenu();
-    if(menu){
+    if (menu) {
       if (menu->isOptionChecked(MenuOption::CollisionProxies)) {
         renderCollisionProxies(alpha);
       }

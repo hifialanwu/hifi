@@ -41,7 +41,7 @@ const float SKIN_COLOR[] = {1.0f, 0.84f, 0.66f};
 const float DARK_SKIN_COLOR[] = {0.9f, 0.78f, 0.63f};
 
 MyAvatar::MyAvatar() :
-    Avatar(),
+       Avatar(),
     _mousePressed(false),
     _bodyPitchDelta(0.0f),
     _bodyRollDelta(0.0f),
@@ -239,7 +239,7 @@ void MyAvatar::simulate(float deltaTime) {
 
     // update body yaw by body yaw delta
     orientation = orientation * glm::quat(glm::radians(
-						       glm::vec3(_bodyPitchDelta, _bodyYawDelta, _bodyRollDelta) * deltaTime));
+	glm::vec3(_bodyPitchDelta, _bodyYawDelta, _bodyRollDelta) * deltaTime));
     // decay body rotation momentum
 
     const float BODY_SPIN_FRICTION = 7.5f;
@@ -268,7 +268,7 @@ void MyAvatar::simulate(float deltaTime) {
     const float NEAR_AVATAR_DAMPING_FACTOR = 50.f;
     if (_distanceToNearestAvatar < _scale * SLOW_NEAR_RADIUS) {
         linearDamping *= 1.f + NEAR_AVATAR_DAMPING_FACTOR *
-	    ((SLOW_NEAR_RADIUS - _distanceToNearestAvatar) / SLOW_NEAR_RADIUS);
+	                    ((SLOW_NEAR_RADIUS - _distanceToNearestAvatar) / SLOW_NEAR_RADIUS);
     }
     if (_speedBrakes) {
         applyDamping(deltaTime, _velocity,  linearDamping * SPEED_BRAKE_POWER, SQUARED_DAMPING_STRENGTH * SPEED_BRAKE_POWER);
@@ -285,8 +285,8 @@ void MyAvatar::simulate(float deltaTime) {
     const int OCULUS_YAW_OFFSET_THRESHOLD = 10;
 
     if (!Application::getInstance()->getFaceshift()->isActive() && OculusManager::isConnected() &&
-	fabsf(forwardAcceleration) > OCULUS_ACCELERATION_PULL_THRESHOLD &&
-	fabs(_head.getYaw()) > OCULUS_YAW_OFFSET_THRESHOLD) {
+	    fabsf(forwardAcceleration) > OCULUS_ACCELERATION_PULL_THRESHOLD &&
+	    fabs(_head.getYaw()) > OCULUS_YAW_OFFSET_THRESHOLD) {
             
         // if we're wearing the oculus
         // and this acceleration is above the pull threshold
@@ -413,9 +413,9 @@ void MyAvatar::updateFromGyros(bool turnWithHead) {
     glm::vec3 relativePosition = estimatedPosition - glm::vec3(0.0f, -TORSO_LENGTH, 0.0f);
     const float MAX_LEAN = 45.0f;
     _head.setLeanSideways(glm::clamp(glm::degrees(atanf(relativePosition.x * _leanScale / TORSO_LENGTH)),
-				     -MAX_LEAN, MAX_LEAN));
+	-MAX_LEAN, MAX_LEAN));
     _head.setLeanForward(glm::clamp(glm::degrees(atanf(relativePosition.z * _leanScale / TORSO_LENGTH)),
-				    -MAX_LEAN, MAX_LEAN));
+	-MAX_LEAN, MAX_LEAN));
 
     // if Faceshift drive is enabled, set the avatar drive based on the head position
     if (!Application::getInstance()->getMenu()->isOptionChecked(MenuOption::MoveWithLean)) {
@@ -553,18 +553,18 @@ void MyAvatar::renderHeadMouse() const {
     glEnd();
     //  If Faceshift is active, show eye pitch and yaw as separate pointer
     if (_faceshift.isActive()) {
-    const float EYE_TARGET_PIXELS_PER_DEGREE = 40.0;
-    int eyeTargetX = (_glWidget->width() / 2) -  _faceshift.getEstimatedEyeYaw() * EYE_TARGET_PIXELS_PER_DEGREE;
-    int eyeTargetY = (_glWidget->height() / 2) -  _faceshift.getEstimatedEyePitch() * EYE_TARGET_PIXELS_PER_DEGREE;
+        const float EYE_TARGET_PIXELS_PER_DEGREE = 40.0;
+	int eyeTargetX = (_glWidget->width() / 2) -  _faceshift.getEstimatedEyeYaw() * EYE_TARGET_PIXELS_PER_DEGREE;
+	int eyeTargetY = (_glWidget->height() / 2) -  _faceshift.getEstimatedEyePitch() * EYE_TARGET_PIXELS_PER_DEGREE;
 
-    glColor3f(0.0, 1.0, 1.0);
-    glDisable(GL_LINE_SMOOTH);
-    glBegin(GL_LINES);
-    glVertex2f(eyeTargetX - PIXEL_BOX/2, eyeTargetY);
-    glVertex2f(eyeTargetX + PIXEL_BOX/2, eyeTargetY);
-    glVertex2f(eyeTargetX, eyeTargetY - PIXEL_BOX/2);
-    glVertex2f(eyeTargetX, eyeTargetY + PIXEL_BOX/2);
-    glEnd();
+	glColor3f(0.0, 1.0, 1.0);
+	glDisable(GL_LINE_SMOOTH);
+	glBegin(GL_LINES);
+	glVertex2f(eyeTargetX - PIXEL_BOX/2, eyeTargetY);
+	glVertex2f(eyeTargetX + PIXEL_BOX/2, eyeTargetY);
+	glVertex2f(eyeTargetX, eyeTargetY - PIXEL_BOX/2);
+	glVertex2f(eyeTargetX, eyeTargetY + PIXEL_BOX/2);
+	glEnd();
 
     }
     */
@@ -765,7 +765,7 @@ void MyAvatar::updateThrust(float deltaTime) {
 
     //  Add thrusts from Transmitter
     const Menu* menu = Application::getInstance()->getMenu();
-    if(menu){
+    if (menu) {
 	if (menu->isOptionChecked(MenuOption::TransmitterDrive) && _transmitter.isConnected()) {
 	    _transmitter.checkForLostTransmitter();
 	    glm::vec3 rotation = _transmitter.getEstimatedRotation();
@@ -881,8 +881,8 @@ void MyAvatar::updateCollisionWithEnvironment(float deltaTime) {
     glm::vec3 penetration;
     float pelvisFloatingHeight = getPelvisFloatingHeight();
     if (Application::getInstance()->getEnvironment()->findCapsulePenetration(
-									     _position - up * (pelvisFloatingHeight - radius),
-									     _position + up * (getHeight() - pelvisFloatingHeight + radius), radius, penetration)) {
+	    _position - up * (pelvisFloatingHeight - radius),
+	    _position + up * (getHeight() - pelvisFloatingHeight + radius), radius, penetration)) {
         _lastCollisionPosition = _position;
         updateCollisionSound(penetration, deltaTime, ENVIRONMENT_COLLISION_FREQUENCY);
         applyHardCollision(penetration, ENVIRONMENT_SURFACE_ELASTICITY, ENVIRONMENT_SURFACE_DAMPING);
@@ -898,8 +898,8 @@ void MyAvatar::updateCollisionWithVoxels(float deltaTime) {
     glm::vec3 penetration;
     float pelvisFloatingHeight = getPelvisFloatingHeight();
     if (Application::getInstance()->getVoxels()->findCapsulePenetration(
-									_position - glm::vec3(0.0f, pelvisFloatingHeight - radius, 0.0f),
-									_position + glm::vec3(0.0f, getHeight() - pelvisFloatingHeight + radius, 0.0f), radius, penetration)) {
+	    _position - glm::vec3(0.0f, pelvisFloatingHeight - radius, 0.0f),
+	    _position + glm::vec3(0.0f, getHeight() - pelvisFloatingHeight + radius, 0.0f), radius, penetration)) {
         _lastCollisionPosition = _position;
         updateCollisionSound(penetration, deltaTime, VOXEL_COLLISION_FREQUENCY);
         applyHardCollision(penetration, VOXEL_ELASTICITY, VOXEL_DAMPING);
@@ -953,10 +953,10 @@ void MyAvatar::updateCollisionSound(const glm::vec3 &penetration, float deltaTim
         //  Noise is a function of the angle of collision
         //  Duration of the sound is a function of both base frequency and velocity of impact
         Application::getInstance()->getAudio()->startCollisionSound(
-								    std::min(COLLISION_LOUDNESS * velocityTowardCollision, 1.f),
-								    frequency * (1.f + velocityTangentToCollision / velocityTowardCollision),
-								    std::min(velocityTangentToCollision / velocityTowardCollision * NOISE_SCALING, 1.f),
-								    1.f - DURATION_SCALING * powf(frequency, 0.5f) / velocityTowardCollision, true);
+	    std::min(COLLISION_LOUDNESS * velocityTowardCollision, 1.f),
+	    frequency * (1.f + velocityTangentToCollision / velocityTowardCollision),
+	    std::min(velocityTangentToCollision / velocityTowardCollision * NOISE_SCALING, 1.f),
+	    1.f - DURATION_SCALING * powf(frequency, 0.5f) / velocityTowardCollision, true);
     }
 }
 
@@ -980,7 +980,7 @@ bool operator<(const SortedAvatar& s1, const SortedAvatar& s2) {
 
 void MyAvatar::updateChatCircle(float deltaTime) {
     const Menu* menu = Application::getInstance()->getMenu();
-    if(menu){
+    if (menu) {
 	if (!(_isChatCirclingEnabled = menu->isOptionChecked(MenuOption::ChatCircling))) {
 	    return;
 	}
@@ -992,7 +992,7 @@ void MyAvatar::updateChatCircle(float deltaTime) {
     foreach (const AvatarSharedPointer& avatarPointer, Application::getInstance()->getAvatarManager().getAvatarHash()) {
         Avatar* avatar = static_cast<Avatar*>(avatarPointer.data());
         if ( ! avatar->isChatCirclingEnabled() ||
-	     avatar == static_cast<Avatar*>(this)) {
+	        avatar == static_cast<Avatar*>(this)) {
             continue;
         }
     

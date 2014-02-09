@@ -271,10 +271,10 @@ void Menu::init(){
     addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::Stars, Qt::Key_Asterisk, true);
     addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::Atmosphere, Qt::SHIFT | Qt::Key_A, true);
     addActionToQMenuAndActionHash(renderOptionsMenu,
-    				  MenuOption::GlowMode,
-    				  0,
-    				  appInstance->getGlowEffect(),
-    				  SLOT(cycleRenderMode()));
+				  MenuOption::GlowMode,
+				  0,
+				  appInstance->getGlowEffect(),
+				  SLOT(cycleRenderMode()));
 
     addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::ParticleCloud, 0, false);
     addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::Shadows, 0, false);

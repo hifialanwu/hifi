@@ -60,7 +60,7 @@ void VoxelPacketProcessor::processPacket(const HifiSockAddr& senderSockAddr, con
     
     voxelPacketType = packetTypeForPacket(mutablePacket);
     
-    if(app->_menu){
+    if (app->_menu) {
 	if (app->_menu->isOptionChecked(MenuOption::Voxels)) {
 	    app->trackIncomingVoxelPacket(mutablePacket, senderSockAddr, wasStatsPacket);
 

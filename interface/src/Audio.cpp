@@ -219,7 +219,7 @@ void linearResampling(int16_t* sourceSamples, int16_t* destinationSamples,
                         // left channel
                         destinationSamples[j] = sourceSamples[sourceIndex];
                     } else if (j % destinationAudioFormat.channelCount() == 1) {
-			// right channel
+  			 // right channel
                         destinationSamples[j] = sourceSamples[sourceIndex + (sourceAudioFormat.channelCount() > 1 ? 1 : 0)];
                     } else {
                         // channels above 2, fill with silence
@@ -303,7 +303,7 @@ void Audio::handleAudioInput() {
     QByteArray inputByteArray = _inputDevice->readAll();
 
     const Menu* menu = Application::getInstance()->getMenu();
-    if (menu){
+    if (menu) {
 	if (menu->isOptionChecked(MenuOption::EchoLocalAudio) && !_muted) {
 	    // if this person wants local loopback add that to the locally injected audio
 
@@ -398,7 +398,7 @@ void Audio::handleAudioInput() {
             // we need the amount of bytes in the buffer + 1 for type
             // + 12 for 3 floats for position + float for bearing + 1 attenuation byte
 	    const Menu* menu = Application::getInstance()->getMenu();
-	    if(menu){
+	    if (menu) {
 		PacketType packetType = menu->isOptionChecked(MenuOption::EchoServerAudio)
 		    ? PacketTypeMicrophoneAudioWithEcho : PacketTypeMicrophoneAudioNoEcho;
 
@@ -664,7 +664,7 @@ void Audio::addProceduralSounds(int16_t* monoInput, int numSamples) {
 
             monoInput[i] = glm::clamp(monoInput[i] + collisionSample, MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
             _localProceduralSamples[i] = glm::clamp(_localProceduralSamples[i] + collisionSample,
-						    MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
+						  MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
 
             _collisionSoundMagnitude *= _collisionSoundDuration;
         }
@@ -688,7 +688,7 @@ void Audio::addProceduralSounds(int16_t* monoInput, int numSamples) {
 
             monoInput[i] = glm::clamp(monoInput[i] + collisionSample, MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
             _localProceduralSamples[i] = glm::clamp(_localProceduralSamples[i] + collisionSample,
-						    MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
+						  MIN_SAMPLE_VALUE, MAX_SAMPLE_VALUE);
 
             _drumSoundVolume *= (1.f - _drumSoundDecay);
         }

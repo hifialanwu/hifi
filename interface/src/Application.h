@@ -192,7 +192,7 @@ public:
 
     /// Computes the off-axis frustum parameters for the view frustum, taking mirroring into account.
     void computeOffAxisFrustum(float& left, float& right, float& bottom, float& top, float& nearVal,
-			       float& farVal, glm::vec4& nearClipPlane, glm::vec4& farClipPlane) const;
+        float& farVal, glm::vec4& nearClipPlane, glm::vec4& farClipPlane) const;
 
     VoxelShader& getVoxelShader() { return _voxelShader; }
     PointShader& getPointShader() { return _pointShader; }

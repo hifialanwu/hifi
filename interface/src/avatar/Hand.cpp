@@ -135,7 +135,7 @@ void Hand::simulate(float deltaTime, bool isMine) {
                 //  Voxel Drumming with fingertips if enabled
                 if (Application::getInstance()->getMenu()->isOptionChecked(MenuOption::VoxelDrumming)) {
                     VoxelTreeElement* fingerNode = Application::getInstance()->getVoxels()->getVoxelEnclosing(
-													      glm::vec3(fingerTipPosition / (float)TREE_SCALE));
+glm::vec3(fingerTipPosition / (float)TREE_SCALE));
                     if (fingerNode) {
                         if (!palm.getIsCollidingWithVoxel()) {
                             //  Collision has just started
@@ -210,9 +210,9 @@ void Hand::updateCollisions() {
                             const float PALM_COLLIDE_DURATION_MAX = 0.75f;
                             const float PALM_COLLIDE_DECAY_PER_SAMPLE = 0.01f;
                             Application::getInstance()->getAudio()->startDrumSound(PALM_COLLIDE_VOLUME,
-										   PALM_COLLIDE_FREQUENCY,
-										   PALM_COLLIDE_DURATION_MAX,
-										   PALM_COLLIDE_DECAY_PER_SAMPLE);
+										PALM_COLLIDE_FREQUENCY,
+										PALM_COLLIDE_DURATION_MAX,
+										PALM_COLLIDE_DECAY_PER_SAMPLE);
                             //  If the other person's palm is in motion, move mine downward to show I was hit
                             const float MIN_VELOCITY_FOR_SLAP = 0.05f;
                             if (glm::length(otherPalm.getVelocity()) > MIN_VELOCITY_FOR_SLAP) {
@@ -236,8 +236,8 @@ void Hand::updateCollisions() {
             glm::vec3 owningPenetration;
             const Model& skeletonModel = _owningAvatar->getSkeletonModel();
             int skipIndex = skeletonModel.getParentJointIndex(skeletonModel.getParentJointIndex(
-												skeletonModel.getLastFreeJointIndex((i == leftPalmIndex) ? skeletonModel.getLeftHandJointIndex() :
-																    (i == rightPalmIndex) ? skeletonModel.getRightHandJointIndex() : -1)));
+		skeletonModel.getLastFreeJointIndex((i == leftPalmIndex) ? skeletonModel.getLeftHandJointIndex() :
+		    (i == rightPalmIndex) ? skeletonModel.getRightHandJointIndex() : -1)));
             if (_owningAvatar->findSpherePenetration(palm.getPosition(), scaledPalmRadius, owningPenetration, skipIndex)) {
                 totalPenetration = addPenetrations(totalPenetration, owningPenetration);
             }
@@ -323,7 +323,7 @@ void Hand::render(bool isMine) {
     }
     
     const Menu* menu = Application::getInstance()->getMenu();
-    if(menu){
+    if (menu) {
 	if (menu->isOptionChecked(MenuOption::CollisionProxies)) {
 	    for (size_t i = 0; i < getNumPalms(); i++) {
 		PalmData& palm = getPalms()[i];
@@ -463,7 +463,7 @@ void Hand::renderLeapHands(bool isMine) {
 
 
 void Hand::setLeapHands(const std::vector<glm::vec3>& handPositions,
-			const std::vector<glm::vec3>& handNormals) {
+		          const std::vector<glm::vec3>& handNormals) {
     for (size_t i = 0; i < getNumPalms(); ++i) {
         PalmData& palm = getPalms()[i];
         if (i < handPositions.size()) {

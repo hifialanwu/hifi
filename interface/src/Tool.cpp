@@ -16,7 +16,7 @@ void Tool::setAction(QAction* action) {
 }
 
 bool Tool::isActive() {
-    if(_action) return _action->isChecked();
+    if (_action) return _action->isChecked();
 }
 
 void Tool::render(int width, int height) {

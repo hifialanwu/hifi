@@ -71,7 +71,7 @@ bool SkeletonModel::render(float alpha) {
     Model::render(alpha);
     
     const Menu* menu = Application::getInstance()->getMenu();
-    if(menu){
+    if (menu) {
       if (menu->isOptionChecked(MenuOption::CollisionProxies)) {
         renderCollisionProxies(alpha);
       }
